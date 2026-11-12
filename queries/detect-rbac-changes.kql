@@ -1,0 +1,19 @@
+// Detect successful RBAC role assignment creation and removal.
+// Run in a Log Analytics workspace ingesting AzureActivity.
+// A matching event requires analyst review; it is not proof of malicious behavior.
+AzureActivity
+| where TimeGenerated > ago(24h)
+| where OperationNameValue contains "roleassignments"
+| where ActivityStatusValue in~ ("Success", "Succeeded")
+| extend Action = case(
+    OperationNameValue endswith "/write", "Role Assigned",
+    OperationNameValue endswith "/delete", "Role Removed",
+    "Other"
+)
+| project TimeGenerated,
+          Action,
+          Caller,
+          ActivityStatusValue,
+          ResourceId,
+          CorrelationId
+| order by TimeGenerated desc
