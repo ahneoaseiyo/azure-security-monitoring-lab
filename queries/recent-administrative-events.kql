@@ -1,0 +1,13 @@
+// Review all recently ingested administrative operations.
+// No status filter: include both starts and completions.
+AzureActivity
+| where TimeGenerated > ago(24h)
+| where CategoryValue =~ "Administrative"
+| project TimeGenerated,
+          OperationNameValue,
+          ActivityStatusValue,
+          Caller,
+          ResourceGroup,
+          ResourceId,
+          CorrelationId
+| order by TimeGenerated desc
